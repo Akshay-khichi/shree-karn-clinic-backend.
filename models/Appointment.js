@@ -6,7 +6,7 @@ const appointmentSchema = new mongoose.Schema({
     required: [true, 'Full name is required'],
     trim: true,
     minlength: [2, 'Name must be at least 2 characters'],
-    maxlength: [100, 'Name cannot exceed 50 characters']
+    maxlength: [200, 'Name cannot exceed 50 characters']
   },
   phoneNumber: {
     type: String,
@@ -55,7 +55,7 @@ const appointmentSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'confirmed', 'cancelled', 'completed'],
-    default: 'pending'
+    default: 'confirmed'
   },
   createdAt: {
     type: Date,
