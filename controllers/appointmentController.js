@@ -7,23 +7,6 @@ const createAppointment = async (req, res) => {
   try {
     const { fullName, phoneNumber, service, appointmentDate, preferredTime, additionalDetails } = req.body;
 
-    // Check for existing appointment at same time
-  // not need thi codition now
-
-    // const existingAppointment = await Appointment.findOne({
-    //   appointmentDate: new Date(appointmentDate).setHours(0, 0, 0, 0),
-    //   preferredTime,
-    //   status: { $in: ['pending', 'confirmed'] }
-    // });
-
-    // if (existingAppointment) {
-    //   return res.status(409).json({
-    //     success: false,
-    //     message: 'This time slot is already booked. Please choose another time.'
-    //   });
-    // }
-
-    // Create appointment
     const appointment = await Appointment.create({
       fullName,
       phoneNumber,
@@ -49,35 +32,24 @@ const createAppointment = async (req, res) => {
 
   } catch (error) {
     console.error('Create Appointment Error:', error);
-    
     res.status(500).json({
       success: false,
-      message: 'Server error while booking appointment',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Server error while booking appointment'
     });
   }
 };
 
 // @desc    Get all appointments
 // @route   GET /api/appointments
-// @access  Public
+// @access  Private
 const getAllAppointments = async (req, res) => {
   try {
-    const { status, date, service } = req.query;
+    const { status } = req.query;
     
-    const filter = {};
+    const query = status ? { status } : {};
     
-    if (status) filter.status = status;
-    if (service) filter.service = service;
-    if (date) {
-      filter.appointmentDate = {
-        $gte: new Date(date),
-        $lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1))
-      };
-    }
-
-    const appointments = await Appointment.find(filter)
-      .sort({ appointmentDate: 1, preferredTime: 1 })
+    const appointments = await Appointment.find(query)
+      .sort({ createdAt: -1 })
       .select('-__v');
 
     res.status(200).json({
@@ -88,7 +60,6 @@ const getAllAppointments = async (req, res) => {
 
   } catch (error) {
     console.error('Get Appointments Error:', error);
-    
     res.status(500).json({
       success: false,
       message: 'Server error while fetching appointments'
@@ -96,12 +67,12 @@ const getAllAppointments = async (req, res) => {
   }
 };
 
-// @desc    Get single appointment
+// @desc    Get single appointment by ID
 // @route   GET /api/appointments/:id
-// @access  Public
+// @access  Private
 const getAppointment = async (req, res) => {
   try {
-    const appointment = await Appointment.findById(req.params.id);
+    const appointment = await Appointment.findById(req.params.id).select('-__v');
 
     if (!appointment) {
       return res.status(404).json({
@@ -117,7 +88,6 @@ const getAppointment = async (req, res) => {
 
   } catch (error) {
     console.error('Get Appointment Error:', error);
-    
     res.status(500).json({
       success: false,
       message: 'Server error while fetching appointment'
@@ -125,78 +95,42 @@ const getAppointment = async (req, res) => {
   }
 };
 
-// @desc    Update appointment status
-// @route   PUT /api/appointments/:id
+// @desc    Get appointments by phone number
+// @route   GET /api/appointments/phone/:phoneNumber
 // @access  Public
-const updateAppointment = async (req, res) => {
+const getAppointmentByPhone = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { phoneNumber } = req.params;
 
-    const appointment = await Appointment.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true, runValidators: true }
-    );
+    const appointments = await Appointment.find({ phoneNumber })
+      .sort({ appointmentDate: -1 })
+      .select('-__v');
 
-    if (!appointment) {
+    if (!appointments || appointments.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Appointment not found'
+        message: 'No appointments found for this phone number'
       });
     }
 
     res.status(200).json({
       success: true,
-      message: `Appointment ${status}`,
-      data: { appointment }
+      count: appointments.length,
+      data: { appointments }
     });
 
   } catch (error) {
-    console.error('Update Appointment Error:', error);
-    
+    console.error('Get Appointment by Phone Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while updating appointment'
+      message: 'Server error while fetching appointments'
     });
   }
 };
 
-// @desc    Cancel appointment
-// @route   DELETE /api/appointments/:id
-// @access  Public
-const cancelAppointment = async (req, res) => {
-  try {
-    const appointment = await Appointment.findByIdAndUpdate(
-      req.params.id,
-      { status: 'cancelled' },
-      { new: true }
-    );
-
-    if (!appointment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Appointment not found'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Appointment cancelled successfully',
-      data: { appointment }
-    });
-
-  } catch (error) {
-    console.error('Cancel Appointment Error:', error);
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while cancelling appointment'
-    });
-  }
-};
-
-
-
+// @desc    Get appointment statistics
+// @route   GET /api/appointments/stats
+// @access  Private
 const getAppointmentStats = async (req, res) => {
   try {
     const total = await Appointment.countDocuments();
@@ -233,12 +167,81 @@ const getAppointmentStats = async (req, res) => {
   }
 };
 
+// @desc    Update appointment status
+// @route   PUT /api/appointments/:id
+// @access  Private
+const updateAppointment = async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    ).select('-__v');
 
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointment updated successfully',
+      data: { appointment }
+    });
+
+  } catch (error) {
+    console.error('Update Appointment Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while updating appointment'
+    });
+  }
+};
+
+// @desc    Cancel appointment (soft delete)
+// @route   DELETE /api/appointments/:id
+// @access  Private
+const cancelAppointment = async (req, res) => {
+  try {
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status: 'cancelled' },
+      { new: true }
+    ).select('-__v');
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointment cancelled successfully',
+      data: { appointment }
+    });
+
+  } catch (error) {
+    console.error('Cancel Appointment Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while cancelling appointment'
+    });
+  }
+};
+
+// EXPORT ALL FUNCTIONS (this was likely missing or incomplete)
 module.exports = {
   createAppointment,
   getAllAppointments,
   getAppointment,
-   getAppointmentStats,
+  getAppointmentByPhone,
+  getAppointmentStats,
   updateAppointment,
   cancelAppointment
 };

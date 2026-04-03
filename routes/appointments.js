@@ -1,21 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const { appointmentValidation, validate } = require('../middleware/validation');
+
 const {
   createAppointment,
   getAllAppointments,
   getAppointment,
+  getAppointmentByPhone,
   getAppointmentStats,
   updateAppointment,
   cancelAppointment
 } = require('../controllers/appointmentController');
 
-// validate MUST be between appointmentValidation and createAppointment
-router.post('/', appointmentValidation, validate, createAppointment);
-router.get('/', getAllAppointments);
-router.get('/stats', getAppointmentStats); 
-router.get('/:id', getAppointment);
-router.put('/:id', updateAppointment);
-router.delete('/:id', cancelAppointment);
+const { appointmentValidation, validate } = require('../middleware/validation');
+const { protect } = require('../middleware/auth');
 
+// Public routes
+router.post('/', appointmentValidation, validate, createAppointment);
+router.get('/phone/:phoneNumber', getAppointmentByPhone);
+
+// Protected routes
+router.get('/', protect, getAllAppointments);
+router.get('/stats', protect, getAppointmentStats);
+router.get('/:id', protect, getAppointment);
+router.put('/:id', protect, updateAppointment);
+router.delete('/:id', protect, cancelAppointment);
+
+//  CORRECT EXPORT
 module.exports = router;
