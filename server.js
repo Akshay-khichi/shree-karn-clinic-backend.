@@ -18,6 +18,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
+    'https://shreekarnclinic.netlify.app/',
     process.env.FRONTEND_URL
   ].filter(Boolean);
 
