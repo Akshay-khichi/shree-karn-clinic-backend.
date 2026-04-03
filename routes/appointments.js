@@ -5,6 +5,7 @@ const {
   createAppointment,
   getAllAppointments,
   getAppointment,
+  getAppointmentStats,
   updateAppointment,
   cancelAppointment
 } = require('../controllers/appointmentController');
@@ -12,6 +13,7 @@ const {
 // validate MUST be between appointmentValidation and createAppointment
 router.post('/', appointmentValidation, validate, createAppointment);
 router.get('/', getAllAppointments);
+router.get('/stats', getAppointmentStats); 
 router.get('/:id', getAppointment);
 router.put('/:id', updateAppointment);
 router.delete('/:id', cancelAppointment);

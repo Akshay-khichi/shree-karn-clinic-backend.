@@ -195,10 +195,50 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+
+
+const getAppointmentStats = async (req, res) => {
+  try {
+    const total = await Appointment.countDocuments();
+    const confirmed = await Appointment.countDocuments({ status: 'confirmed' });
+    const pending = await Appointment.countDocuments({ status: 'pending' });
+    const cancelled = await Appointment.countDocuments({ status: 'cancelled' });
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todayAppointments = await Appointment.countDocuments({
+      appointmentDate: { $gte: today, $lt: tomorrow }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        total,
+        confirmed,
+        pending,
+        cancelled,
+        today: todayAppointments
+      }
+    });
+
+  } catch (error) {
+    console.error('Get Stats Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching statistics'
+    });
+  }
+};
+
+
 module.exports = {
   createAppointment,
   getAllAppointments,
   getAppointment,
+   getAppointmentStats,
   updateAppointment,
   cancelAppointment
 };
