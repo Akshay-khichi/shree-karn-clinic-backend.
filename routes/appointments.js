@@ -16,7 +16,6 @@ const { protect } = require('../middleware/auth');
 
 // Public routes
 router.post('/', appointmentValidation, validate, createAppointment);
-router.get('/phone/:phoneNumber', getAppointmentByPhone);
 
 // Protected routes
 router.get('/', protect, getAllAppointments);

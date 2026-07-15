@@ -235,12 +235,11 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
-// EXPORT ALL FUNCTIONS (this was likely missing or incomplete)
+
 module.exports = {
   createAppointment,
   getAllAppointments,
   getAppointment,
-  getAppointmentByPhone,
   getAppointmentStats,
   updateAppointment,
   cancelAppointment
