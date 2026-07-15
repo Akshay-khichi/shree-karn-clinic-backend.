@@ -67,7 +67,7 @@ const validate = (req, res, next) => {
     });
   }
   
-  // Don't remove it!
+ 
   next();
 };
 

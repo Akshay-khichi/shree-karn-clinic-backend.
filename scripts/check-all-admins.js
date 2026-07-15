@@ -5,15 +5,15 @@ const Admin = require('./models/Admin');
 async function checkAllAdmins() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ MongoDB connected');
+    console.log(' MongoDB connected');
     console.log(`Database: ${mongoose.connection.name}`);
     
     const admins = await Admin.find({}).select('username role createdAt');
     
-    console.log(`\n📊 Total admins found: ${admins.length}`);
+    console.log(`\n Total admins found: ${admins.length}`);
     
     if (admins.length === 0) {
-      console.log('❌ NO ADMINS IN DATABASE');
+      console.log(' NO ADMINS IN DATABASE');
     } else {
       console.log('\n=== All Admins ===');
       admins.forEach((admin, i) => {
@@ -25,7 +25,7 @@ async function checkAllAdmins() {
     
     await mongoose.disconnect();
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error(' Error:', error.message);
   }
 }
 

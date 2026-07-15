@@ -6,7 +6,7 @@ const appointmentSchema = new mongoose.Schema({
     required: [true, 'Full name is required'],
     trim: true,
     minlength: [2, 'Name must be at least 2 characters'],
-    maxlength: [200, 'Name cannot exceed 50 characters']
+    maxlength: [200, 'Name cannot exceed 200 characters']
   },
   phoneNumber: {
     type: String,
@@ -68,11 +68,10 @@ const appointmentSchema = new mongoose.Schema({
 // Index for faster queries
 appointmentSchema.index({ appointmentDate: 1, preferredTime: 1 });
 
-// Pre-save middleware to send confirmation (optional)
+// Pre-save middleware to send confirmation
 appointmentSchema.pre('save', async function(next) {
   if (this.isNew) {
-    console.log(`New appointment booked: ${this.fullName} - ${this.appointmentDate}`);
-    // Add email/SMS notification logic here
+    console.log(`New appointment booked: ${this.fullName} - ${this.appointmentDate}`);    
   }
   next();
 });
