@@ -16,13 +16,14 @@ const { protect } = require('../middleware/auth');
 
 // Public routes
 router.post('/', appointmentValidation, validate, createAppointment);
+router.get('/phone/:phoneNumber', getAppointmentByPhone);
+router.delete('/:id', cancelAppointment);
 
-// Protected routes
+// Protected routes (Admin only)
 router.get('/', protect, getAllAppointments);
 router.get('/stats', protect, getAppointmentStats);
 router.get('/:id', protect, getAppointment);
 router.put('/:id', protect, updateAppointment);
-router.delete('/:id', protect, cancelAppointment);
 
 //  CORRECT EXPORT
 module.exports = router;

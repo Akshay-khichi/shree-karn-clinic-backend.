@@ -24,8 +24,10 @@ app.use((req, res, next) => {
     process.env.FRONTEND_URL
   ].filter(Boolean);
 
-  if (!allowedOrigin || allowedOrigins.includes(allowedOrigin) || allowedOrigin?.includes('localhost')) {
+  if (!allowedOrigin || allowedOrigins.includes(allowedOrigin) || allowedOrigin.includes('localhost') || allowedOrigin.includes('shreekarnclinic.com') || allowedOrigin.includes('vercel.app') || allowedOrigin.includes('netlify.app')) {
     res.header('Access-Control-Allow-Origin', allowedOrigin || '*');
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
   }
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');

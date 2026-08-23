@@ -240,6 +240,7 @@ module.exports = {
   createAppointment,
   getAllAppointments,
   getAppointment,
+  getAppointmentByPhone,
   getAppointmentStats,
   updateAppointment,
   cancelAppointment
