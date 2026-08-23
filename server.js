@@ -47,7 +47,15 @@ const authRoutes = require('./routes/auth');
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/auth', authRoutes);
 
-// Health check route
+// Health check routes (Ping every 10 mins with UptimeRobot / Cron-Job.org to prevent Render cold starts)
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Shree Karn Clinic API is live',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,

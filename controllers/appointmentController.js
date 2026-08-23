@@ -202,9 +202,9 @@ const updateAppointment = async (req, res) => {
   }
 };
 
-// @desc    Cancel appointment (soft delete)
+// @desc    Cancel appointment (Admin delete/soft delete)
 // @route   DELETE /api/appointments/:id
-// @access  Private
+// @access  Private (Admin only)
 const cancelAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findByIdAndUpdate(
@@ -235,6 +235,59 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
+// @desc    Patient cancel appointment
+// @route   PATCH /api/appointments/:id/cancel
+// @access  Public
+const cancelAppointmentByPatient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { phoneNumber } = req.body;
+
+    const query = { _id: id };
+    if (phoneNumber) {
+      query.phoneNumber = phoneNumber;
+    }
+
+    const appointment = await Appointment.findOne(query);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found or phone number does not match'
+      });
+    }
+
+    if (appointment.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Appointment is already cancelled'
+      });
+    }
+
+    if (appointment.status === 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: 'Completed appointments cannot be cancelled'
+      });
+    }
+
+    appointment.status = 'cancelled';
+    await appointment.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointment cancelled successfully',
+      data: { appointment }
+    });
+
+  } catch (error) {
+    console.error('Patient Cancel Appointment Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while cancelling appointment'
+    });
+  }
+};
 
 module.exports = {
   createAppointment,
@@ -243,5 +296,6 @@ module.exports = {
   getAppointmentByPhone,
   getAppointmentStats,
   updateAppointment,
-  cancelAppointment
+  cancelAppointment,
+  cancelAppointmentByPatient
 };
